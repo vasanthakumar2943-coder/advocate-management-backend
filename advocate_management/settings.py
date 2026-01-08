@@ -61,8 +61,9 @@ REST_FRAMEWORK = {
 # =====================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ ADD THIS
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # MUST be here
     "corsheaders.middleware.CorsMiddleware",
+
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -70,7 +71,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
 
 # =====================================================
 # CORS / CSRF  (VERCEL → RAILWAY)
@@ -142,6 +142,8 @@ USE_TZ = True
 # =====================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STATICFILES_DIRS = []  # important: keep empty in prod
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
