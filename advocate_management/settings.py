@@ -1,18 +1,22 @@
 from pathlib import Path
 from datetime import timedelta
 import os
+from corsheaders.defaults import default_headers
 
+# =====================================================
+# BASE
+# =====================================================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 🔐 SECURITY
+# =====================================================
+# SECURITY
+# =====================================================
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
 
-# 🚨 DEBUG OFF FOR HOSTING
 DEBUG = False
 
-# 🌍 ALLOWED HOSTS (Railway / Render / Vercel frontend)
 ALLOWED_HOSTS = [
-     "web-production-d827.up.railway.app",
+    "web-production-d827.up.railway.app",
     ".railway.app",
     "localhost",
     "127.0.0.1",
@@ -29,10 +33,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
+    # third-party
     "rest_framework",
     "corsheaders",
     "channels",
 
+    # local
     "users",
 ]
 
@@ -47,27 +53,43 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
-    )
+    ),
 }
 
 # =====================================================
-# MIDDLEWARE
+# MIDDLEWARE  (ORDER IS CRITICAL)
 # =====================================================
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",          # MUST BE FIRST
+    "django.middleware.common.CommonMiddleware",
+
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 # =====================================================
-# CORS / CSRF (FRONTEND = VERCEL)
+# CORS / CSRF  (VERCEL → RAILWAY)
 # =====================================================
-CORS_ALLOW_ALL_ORIGINS = True
 
+
+
+# ✅ Allow only your frontend
+CORS_ALLOWED_ORIGINS = [
+    "https://advocate-management-ten.vercel.app",
+]
+
+# ✅ Allow JWT headers
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "authorization",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# ✅ CSRF (required for POST/PUT/DELETE)
 CSRF_TRUSTED_ORIGINS = [
     "https://advocate-management-ten.vercel.app",
     "https://*.railway.app",
@@ -95,7 +117,7 @@ TEMPLATES = [
 ]
 
 # =====================================================
-# DATABASE (SQLite – OK FOR DEMO)
+# DATABASE
 # =====================================================
 DATABASES = {
     "default": {
@@ -126,7 +148,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =====================================================
-# 🔥 CHANNELS (NO REDIS – SIMPLE & STABLE)
+# CHANNELS (STABLE – NO REDIS)
 # =====================================================
 ASGI_APPLICATION = "advocate_management.asgi.application"
 
@@ -137,7 +159,7 @@ CHANNEL_LAYERS = {
 }
 
 # =====================================================
-# 🔐 JWT SETTINGS
+# JWT SETTINGS
 # =====================================================
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=6),
