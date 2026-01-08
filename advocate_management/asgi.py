@@ -3,6 +3,7 @@ from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from whitenoise import WhiteNoise
+from django.conf import settings
 
 import users.routing
 
@@ -10,11 +11,11 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "advocate_management.settings")
 
 django_asgi_app = get_asgi_application()
 
-# 🔥 WhiteNoise wraps ASGI app (THIS FIXES ADMIN CSS)
+# ✅ CORRECT STATIC ROOT (NO HARD-CODE)
 django_asgi_app = WhiteNoise(
     django_asgi_app,
-    root="/app/staticfiles",
-    prefix="static/",
+    root=str(settings.STATIC_ROOT),
+    prefix=settings.STATIC_URL,
 )
 
 application = ProtocolTypeRouter({
