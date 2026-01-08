@@ -6,7 +6,10 @@ urlpatterns = [
     # AUTH
     path("token/", TokenObtainPairView.as_view()),
     path("signup/", views.signup),
-    path("me/", views.me),
+    path("me/", views.me, name="me"),
+    
+    
+    
 
     # CLIENT / ADVOCATE
     path("advocates/", views.list_advocates),

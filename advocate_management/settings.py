@@ -12,10 +12,8 @@ DEBUG = False
 
 # 🌍 ALLOWED HOSTS (Railway / Render / Vercel frontend)
 ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    ".railway.app",
-    ".render.com",
+     "web-production-d827.up.railway.app",
+    ".railway.app"
 ]
 
 # =====================================================

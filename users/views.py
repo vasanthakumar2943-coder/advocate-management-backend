@@ -317,3 +317,16 @@ def delete_appointment(request, appointment_id):
     )
     appointment.delete()
     return Response({"message": "Deleted"})
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def me(request):
+    user = request.user
+    return Response({
+        "id": user.id,
+        "username": user.username,
+        "role": getattr(user, "role", None),
+    })

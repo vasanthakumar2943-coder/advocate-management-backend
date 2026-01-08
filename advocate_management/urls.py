@@ -39,7 +39,7 @@ urlpatterns = [
     # ======================
     path("api/token/", TokenObtainPairView.as_view(), name="token"),
     path("api/signup/", signup, name="signup"),
-    path("api/me/", me, name="me"),
+    path("api/", include("users.urls")),
 
     # ======================
     # ADMIN
