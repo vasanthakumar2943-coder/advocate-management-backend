@@ -1,8 +1,58 @@
-from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
-User = settings.AUTH_USER_MODEL
 
+# =====================================================
+# USER MANAGER
+# =====================================================
+
+class UserManager(BaseUserManager):
+    def create_user(self, email, password=None, role="CLIENT"):
+        if not email:
+            raise ValueError("Email is required")
+
+        email = self.normalize_email(email)
+        user = self.model(email=email, role=role)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password):
+        user = self.create_user(email, password, role="ADMIN")
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
+
+
+# =====================================================
+# USER MODEL
+# =====================================================
+
+class User(AbstractBaseUser, PermissionsMixin):
+    ROLE_CHOICES = (
+        ("ADMIN", "Admin"),
+        ("CLIENT", "Client"),
+        ("ADVOCATE", "Advocate"),
+    )
+
+    email = models.EmailField(unique=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="CLIENT")
+
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = "email"
+
+    def __str__(self):
+        return self.email
+
+
+# =====================================================
+# ADVOCATE PROFILE
+# =====================================================
 
 class AdvocateProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -11,6 +61,10 @@ class AdvocateProfile(models.Model):
     def __str__(self):
         return self.user.email
 
+
+# =====================================================
+# APPOINTMENT
+# =====================================================
 
 class Appointment(models.Model):
     client = models.ForeignKey(
@@ -22,18 +76,20 @@ class Appointment(models.Model):
     approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Appointment {self.id}"
 
+# =====================================================
+# CASE
+# =====================================================
 
 class Case(models.Model):
     appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Case {self.id}"
 
+# =====================================================
+# CHAT MESSAGE
+# =====================================================
 
 class ChatMessage(models.Model):
     appointment = models.ForeignKey(
@@ -44,6 +100,3 @@ class ChatMessage(models.Model):
     file = models.FileField(upload_to="chat_files/", null=True, blank=True)
     seen = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Message {self.id}"
