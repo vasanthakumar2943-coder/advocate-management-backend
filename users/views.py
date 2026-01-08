@@ -12,9 +12,4 @@ def typing_status(request, appointment_id):
         cache.set(key, True, timeout=3)
         return Response({"typing": True})
 
-    # GET
-    for k in cache.keys(f"typing_{appointment_id}_*"):
-        if k != key:
-            if cache.get(k):
-                return Response({"typing": True})
     return Response({"typing": False})

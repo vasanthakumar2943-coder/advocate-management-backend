@@ -1,7 +1,6 @@
 from pathlib import Path
 from datetime import timedelta
 import os
-from corsheaders.defaults import default_headers
 
 # =====================================================
 # BASE
@@ -13,10 +12,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =====================================================
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
 
-DEBUG = False   # ✅ PRODUCTION SAFE
+DEBUG = False
 
 ALLOWED_HOSTS = [
-    "web-production-d827.up.railway.app",
     ".railway.app",
     "localhost",
     "127.0.0.1",
@@ -33,10 +31,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # third-party
+    # third party
     "rest_framework",
     "corsheaders",
-    
 
     # local
     "users",
@@ -57,7 +54,7 @@ REST_FRAMEWORK = {
 }
 
 # =====================================================
-# MIDDLEWARE  (❌ NO WHITENOISE)
+# MIDDLEWARE
 # =====================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -70,17 +67,13 @@ MIDDLEWARE = [
 ]
 
 # =====================================================
-# CORS / CSRF  (VERCEL → RAILWAY)
+# CORS / CSRF (VERCEL → RAILWAY)
 # =====================================================
+CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOWED_ORIGINS = [
     "https://advocate-management-ten.vercel.app",
 ]
-
-CORS_ALLOW_HEADERS = list(default_headers) + [
-    "authorization",
-]
-
-CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://advocate-management-ten.vercel.app",
@@ -95,7 +88,7 @@ ROOT_URLCONF = "advocate_management.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -129,7 +122,7 @@ USE_I18N = True
 USE_TZ = True
 
 # =====================================================
-# STATIC & MEDIA (NO WHITENOISE)
+# STATIC & MEDIA
 # =====================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -140,9 +133,13 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =====================================================
-# CHANNELS (NO REDIS – STABLE)
+# CACHE (TYPING INDICATOR SAFE)
 # =====================================================
-
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
 
 # =====================================================
 # JWT SETTINGS
@@ -150,7 +147,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=6),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": False,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
