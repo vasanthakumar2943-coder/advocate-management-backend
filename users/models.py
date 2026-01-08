@@ -1,105 +1,49 @@
-from django.contrib.auth.models import AbstractUser
-from django.db import models
 from django.conf import settings
+from django.db import models
+
+User = settings.AUTH_USER_MODEL
 
 
-# =========================
-# Custom User
-# =========================
-class User(AbstractUser):
-    ROLE_CHOICES = (
-        ("admin", "Admin"),
-        ("advocate", "Advocate"),
-        ("client", "Client"),
-    )
-
-    STATUS_CHOICES = (
-        ("pending", "Pending"),
-        ("approved", "Approved"),
-    )
-
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending"
-    )
+class AdvocateProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    approved = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.username
+        return self.user.email
 
 
-# =========================
-# Appointment
-# =========================
 class Appointment(models.Model):
     client = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="client_appointments"
+        User, related_name="client_appointments", on_delete=models.CASCADE
     )
     advocate = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="advocate_appointments"
+        User, related_name="advocate_appointments", on_delete=models.CASCADE
     )
-    date = models.DateField()
-    time = models.TimeField()
-
-    STATUS_CHOICES = (
-        ("pending", "Pending"),
-        ("approved", "Approved"),
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending"
-    )
-
-    def __str__(self):
-        return f"{self.client} → {self.advocate}"
-
-
-# =========================
-# Case
-# =========================
-class Case(models.Model):
-    client = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="cases"
-    )
-    advocate = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="handled_cases"
-    )
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    status = models.CharField(
-        max_length=20,
-        choices=(("open", "Open"), ("closed", "Closed")),
-        default="open"
-    )
-
-
-# =========================
-# Chat Message (FINAL)
-# =========================
-class ChatMessage(models.Model):
-    appointment = models.ForeignKey(
-        Appointment,
-        on_delete=models.CASCADE,
-        related_name="messages"
-    )
-    sender = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
-    )
-    message = models.TextField()
-    is_seen = models.BooleanField(default=False)
+    approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.sender}: {self.message[:20]}"
+        return f"Appointment {self.id}"
+
+
+class Case(models.Model):
+    appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Case {self.id}"
+
+
+class ChatMessage(models.Model):
+    appointment = models.ForeignKey(
+        Appointment, related_name="messages", on_delete=models.CASCADE
+    )
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField(blank=True)
+    file = models.FileField(upload_to="chat_files/", null=True, blank=True)
+    seen = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message {self.id}"
