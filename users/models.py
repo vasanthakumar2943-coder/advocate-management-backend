@@ -1,8 +1,7 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
-    # IMPORTANT: clash avoid panna related_name MUST
     groups = models.ManyToManyField(
         "auth.Group",
         related_name="users_user_groups",
@@ -16,3 +15,12 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class AdvocateProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    phone = models.CharField(max_length=15, blank=True)
+    address = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.user.username
