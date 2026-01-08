@@ -93,8 +93,10 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "https://advocate-management-ten.vercel.app",
     "http://localhost:5173",
+    "https://web-production-d827.up.railway.app",
 ]
-
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 # =========================
 # REST FRAMEWORK ✅ FINAL FIX
 # =========================

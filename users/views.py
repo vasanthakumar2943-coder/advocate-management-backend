@@ -41,6 +41,13 @@ def login_view(request):
     if not user:
         return Response({"error": "Invalid credentials"}, status=401)
 
+    # 🔴 BLOCK unapproved advocate
+    if user.role == "advocate" and user.status != "approved":
+        return Response(
+            {"error": "Your advocate account is pending admin approval"},
+            status=403
+        )
+
     refresh = RefreshToken.for_user(user)
 
     return Response({
