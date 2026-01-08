@@ -62,3 +62,21 @@ def me(request):
         "role": user.role,
         "status": user.status,
     })
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])  # 🔥 MUST
+def signup(request):
+    data = request.data
+
+    if User.objects.filter(username=data["username"]).exists():
+        return Response({"error": "User already exists"}, status=400)
+
+    user = User.objects.create_user(
+        username=data["username"],
+        password=data["password"],
+        role=data.get("role", "client"),
+        status="pending" if data.get("role") == "advocate" else "approved",
+    )
+
+    return Response({"message": "Signup successful"}, status=201)
