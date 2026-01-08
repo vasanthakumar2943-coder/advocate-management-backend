@@ -1,8 +1,12 @@
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 from users.views import (
+    # Auth
     signup,
     me,
 
@@ -20,7 +24,7 @@ from users.views import (
     create_case,
     my_cases,
 
-    # Chat
+    # Chat (REST)
     send_message,
     chat_history,
     upload_chat_file,
@@ -29,45 +33,51 @@ from users.views import (
 )
 
 urlpatterns = [
-    # ======================
+    # ==================================================
     # DJANGO ADMIN
-    # ======================
+    # ==================================================
     path("admin/", admin.site.urls),
 
-    # ======================
-    # AUTH
-    # ======================
-    path("api/token/", TokenObtainPairView.as_view(), name="token"),
-    path("api/signup/", signup, name="signup"),
-    path("api/", include("users.urls")),
+    # ==================================================
+    # AUTH / JWT
+    # ==================================================
+    path("api/auth/login/", TokenObtainPairView.as_view(), name="jwt_login"),
+    path("api/auth/refresh/", TokenRefreshView.as_view(), name="jwt_refresh"),
+    path("api/auth/signup/", signup, name="signup"),
+    path("api/auth/me/", me, name="me"),
 
-    # ======================
-    # ADMIN
-    # ======================
-    path("api/pending-advocates/", pending_advocates),
-    path("api/approve/<int:user_id>/", approve_advocate),
+    # ==================================================
+    # ADMIN APIs
+    # ==================================================
+    path("api/admin/advocates/", list_advocates),
+    path("api/admin/pending-advocates/", pending_advocates),
+    path("api/admin/approve-advocate/<int:user_id>/", approve_advocate),
 
-    # ======================
-    # CLIENT
-    # ======================
-    path("api/advocates/", list_advocates),
-    path("api/book-appointment/", book_appointment),
-    path("api/my-appointments/", my_appointments),
+    # ==================================================
+    # CLIENT APIs
+    # ==================================================
+    path("api/client/book-appointment/", book_appointment),
+    path("api/client/my-appointments/", my_appointments),
 
-    # ======================
-    # ADVOCATE
-    # ======================
-    path("api/appointments/my/", my_appointments),  # 🔥 SAME API FOR CLIENT & ADVOCATE
-    path("api/approve-appointment/<int:appointment_id>/", approve_appointment),
-    path("api/create-case/", create_case),
-    path("api/my-cases/", my_cases),
+    # ==================================================
+    # ADVOCATE APIs
+    # ==================================================
+    path("api/advocate/my-appointments/", my_appointments),
+    path("api/advocate/approve-appointment/<int:appointment_id>/", approve_appointment),
+    path("api/advocate/create-case/", create_case),
+    path("api/advocate/my-cases/", my_cases),
 
-    # ======================
-    # CHAT (REST)
-    # ======================
+    # ==================================================
+    # CHAT APIs (REST)
+    # ==================================================
     path("api/chat/<int:appointment_id>/send/", send_message),
-    path("api/chat-history/<int:appointment_id>/", chat_history),
-    path("api/chat-upload/<int:appointment_id>/", upload_chat_file),
-    path("api/mark-seen/<int:appointment_id>/", mark_seen),
-    path("api/unread-count/", unread_count),
+    path("api/chat/<int:appointment_id>/history/", chat_history),
+    path("api/chat/<int:appointment_id>/upload/", upload_chat_file),
+    path("api/chat/<int:appointment_id>/mark-seen/", mark_seen),
+    path("api/chat/unread-count/", unread_count),
+
+    # ==================================================
+    # APP URLS (OPTIONAL – FUTURE SCALE)
+    # ==================================================
+    path("api/", include("users.urls")),
 ]
