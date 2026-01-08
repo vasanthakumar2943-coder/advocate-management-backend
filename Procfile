@@ -1,1 +1,1 @@
-web: gunicorn advocate_management.asgi:application -k uvicorn.workers.UvicornWorker
+web: gunicorn advocate_management.wsgi

@@ -46,7 +46,7 @@ urlpatterns = [
     path("advocate/create-case/", create_case),
     path("advocate/my-cases/", my_cases),
 
-    # CHAT
+    # CHAT (REST)
     path("chat/<int:appointment_id>/send/", send_message),
     path("chat/<int:appointment_id>/history/", chat_history),
     path("chat/<int:appointment_id>/upload/", upload_chat_file),
