@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     # third-party
     "rest_framework",
     "corsheaders",
-    "channels",
+    
 
     # local
     "users",
@@ -142,13 +142,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # =====================================================
 # CHANNELS (NO REDIS – STABLE)
 # =====================================================
-ASGI_APPLICATION = "advocate_management.asgi.application"
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    }
-}
 
 # =====================================================
 # JWT SETTINGS
