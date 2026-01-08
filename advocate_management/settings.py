@@ -58,7 +58,10 @@ REST_FRAMEWORK = {
 # =====================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+
+    # ⚠️ CORS MUST BE TOP
     "corsheaders.middleware.CorsMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -67,13 +70,14 @@ MIDDLEWARE = [
 ]
 
 # =====================================================
-# CORS / CSRF (VERCEL → RAILWAY)
+# CORS / CSRF (VERCEL → RAILWAY) ✅ FINAL
 # =====================================================
-CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "https://advocate-management-ten.vercel.app",
-]
+# 🔥 safest for college project
+CORS_ALLOW_ALL_ORIGINS = True
+
+# JWT only → cookies illa
+CORS_ALLOW_CREDENTIALS = False
 
 CSRF_TRUSTED_ORIGINS = [
     "https://advocate-management-ten.vercel.app",
@@ -101,6 +105,8 @@ TEMPLATES = [
     },
 ]
 
+WSGI_APPLICATION = "advocate_management.wsgi.application"
+
 # =====================================================
 # DATABASE
 # =====================================================
@@ -111,6 +117,9 @@ DATABASES = {
     }
 }
 
+# =====================================================
+# PASSWORD
+# =====================================================
 AUTH_PASSWORD_VALIDATORS = []
 
 # =====================================================
@@ -133,7 +142,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =====================================================
-# CACHE (TYPING INDICATOR SAFE)
+# CACHE (typing indicator safe)
 # =====================================================
 CACHES = {
     "default": {
