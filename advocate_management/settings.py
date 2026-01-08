@@ -61,7 +61,7 @@ REST_FRAMEWORK = {
 # =====================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # MUST be here
+    
     "corsheaders.middleware.CorsMiddleware",
 
     "django.middleware.common.CommonMiddleware",
@@ -143,7 +143,6 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEBUG = False
 
