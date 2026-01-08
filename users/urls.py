@@ -1,6 +1,27 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from users.views import *
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+
+from users.views import (
+    signup,
+    me,
+    list_advocates,
+    pending_advocates,
+    approve_advocate,
+    book_appointment,
+    my_appointments,
+    approve_appointment,
+    create_case,
+    my_cases,
+    send_message,
+    chat_history,
+    upload_chat_file,
+    mark_seen,
+    typing_status,
+    unread_count,
+)
 
 urlpatterns = [
 
@@ -25,7 +46,7 @@ urlpatterns = [
     path("advocate/create-case/", create_case),
     path("advocate/my-cases/", my_cases),
 
-    # CHAT (REST ONLY)
+    # CHAT
     path("chat/<int:appointment_id>/send/", send_message),
     path("chat/<int:appointment_id>/history/", chat_history),
     path("chat/<int:appointment_id>/upload/", upload_chat_file),
