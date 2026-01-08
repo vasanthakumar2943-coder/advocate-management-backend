@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.conf import settings
 
+
 # =========================
 # Custom User
 # =========================
@@ -18,7 +19,11 @@ class User(AbstractUser):
     )
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
 
     def __str__(self):
         return self.username
@@ -46,14 +51,18 @@ class Appointment(models.Model):
         ("approved", "Approved"),
     )
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
 
     def __str__(self):
-        return f"{self.client} → {self.advocate} ({self.status})"
+        return f"{self.client} → {self.advocate}"
 
 
 # =========================
-# Case Management
+# Case
 # =========================
 class Case(models.Model):
     client = models.ForeignKey(
@@ -68,20 +77,15 @@ class Case(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField()
-
-    STATUS_CHOICES = (
-        ("open", "Open"),
-        ("closed", "Closed"),
+    status = models.CharField(
+        max_length=20,
+        choices=(("open", "Open"), ("closed", "Closed")),
+        default="open"
     )
-
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="open")
-
-    def __str__(self):
-        return self.title
 
 
 # =========================
-# Chat Messages (ONLY ONE)
+# Chat Message (FINAL)
 # =========================
 class ChatMessage(models.Model):
     appointment = models.ForeignKey(
@@ -93,12 +97,9 @@ class ChatMessage(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
-
-    message = models.TextField(blank=True)
-    file = models.FileField(upload_to="chat_files/", null=True, blank=True)
-
+    message = models.TextField()
     is_seen = models.BooleanField(default=False)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.sender} : {self.message[:20]}"
+        return f"{self.sender}: {self.message[:20]}"

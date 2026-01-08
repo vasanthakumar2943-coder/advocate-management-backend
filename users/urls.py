@@ -1,45 +1,29 @@
 from django.urls import path
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
-from . import views
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .views import *
 
 urlpatterns = [
-    # ==================================================
     # AUTH
-    # ==================================================
-    path("auth/login/", TokenObtainPairView.as_view(), name="jwt_login"),
-    path("auth/refresh/", TokenRefreshView.as_view(), name="jwt_refresh"),
-    path("auth/signup/", views.signup, name="signup"),
-    path("auth/me/", views.me, name="me"),
+    path("auth/login/", TokenObtainPairView.as_view()),
+    path("auth/refresh/", TokenRefreshView.as_view()),
+    path("auth/signup/", signup),
+    path("auth/me/", me),
 
-    # ==================================================
-    # CLIENT / ADVOCATE (COMMON)
-    # ==================================================
-    path("advocates/", views.list_advocates),
-    path("appointments/book/", views.book_appointment),
-    path("appointments/my/", views.my_appointments),
-
-    # ==================================================
     # ADMIN
-    # ==================================================
-    path("admin/pending-advocates/", views.pending_advocates),
-    path("admin/approve-advocate/<int:user_id>/", views.approve_advocate),
+    path("admin/pending-advocates/", pending_advocates),
+    path("admin/approve-advocate/<int:user_id>/", approve_advocate),
 
-    # ==================================================
+    # CLIENT
+    path("client/advocates/", list_advocates),
+    path("client/book-appointment/", book_appointment),
+    path("client/my-appointments/", my_appointments),
+
     # ADVOCATE
-    # ==================================================
-    path("advocate/approve-appointment/<int:appointment_id>/", views.approve_appointment),
-    path("advocate/cases/create/", views.create_case),
-    path("advocate/cases/my/", views.my_cases),
+    path("advocate/my-appointments/", my_appointments),
+    path("advocate/approve-appointment/<int:appointment_id>/", approve_appointment),
+    path("advocate/create-case/", create_case),
+    path("advocate/my-cases/", my_cases),
 
-    # ==================================================
-    # CHAT (REST)
-    # ==================================================
-    path("chat/<int:appointment_id>/history/", views.chat_history),
-    path("chat/<int:appointment_id>/send/", views.send_message),
-    path("chat/<int:appointment_id>/upload/", views.upload_chat_file),
-    path("chat/<int:appointment_id>/mark-seen/", views.mark_seen),
-    path("chat/unread-count/", views.unread_count),
+    # CHAT
+    path("chat/<int:appointment_id>/", chat_messages),
 ]
