@@ -8,5 +8,11 @@ class User(AbstractUser):
         ("client", "Client"),
     )
 
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="client")
-    status = models.CharField(max_length=20, default="approved")
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    status = models.CharField(
+        max_length=20,
+        default="approved"  # admin & client
+    )
+
+    def __str__(self):
+        return self.username

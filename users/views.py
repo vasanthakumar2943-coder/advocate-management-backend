@@ -14,17 +14,19 @@ User = get_user_model()
 def signup(request):
     data = request.data
 
-    if User.objects.filter(username=data.get("username")).exists():
-        return Response({"error": "User already exists"}, status=400)
+    if User.objects.filter(username=data["username"]).exists():
+        return Response({"error": "User exists"}, status=400)
 
-    User.objects.create_user(
-        username=data.get("username"),
-        password=data.get("password"),
-        role=data.get("role", "client"),
-        status="pending" if data.get("role") == "advocate" else "approved",
+    role = data.get("role", "client")
+
+    user = User.objects.create_user(
+        username=data["username"],
+        password=data["password"],
+        role=role,
+        status="pending" if role == "advocate" else "approved",
     )
 
-    return Response({"message": "Signup successful"}, status=201)
+    return Response({"message": "Signup success"})
 
 
 # =====================
@@ -41,10 +43,9 @@ def login_view(request):
     if not user:
         return Response({"error": "Invalid credentials"}, status=401)
 
-    # 🔴 BLOCK unapproved advocate
     if user.role == "advocate" and user.status != "approved":
         return Response(
-            {"error": "Your advocate account is pending admin approval"},
+            {"error": "Advocate account pending admin approval"},
             status=403
         )
 
@@ -52,7 +53,7 @@ def login_view(request):
 
     return Response({
         "access": str(refresh.access_token),
-        "refresh": str(refresh),
+        "role": user.role,
     })
 
 
@@ -70,23 +71,39 @@ def me(request):
         "role": user.role,
         "status": user.status,
     })
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def pending_advocates(request):
     if request.user.role != "admin":
-        return Response({"error": "Unauthorized"}, status=403)
+        return Response(status=403)
 
-    users = User.objects.filter(role="advocate", status="pending")
-
-    data = []
-    for u in users:
-        data.append({
-            "id": u.id,
-            "username": u.username,
-            "status": u.status,
-        })
-
+    advocates = User.objects.filter(role="advocate", status="pending")
+    data = [{"id": u.id, "username": u.username} for u in advocates]
     return Response(data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def approve_advocate(request, id):
+    if request.user.role != "admin":
+        return Response(status=403)
+
+    user = User.objects.get(id=id, role="advocate")
+    user.status = "approved"
+    user.save()
+    return Response({"message": "Approved"})
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_advocate(request, id):
+    if request.user.role != "admin":
+        return Response(status=403)
+
+    User.objects.filter(id=id, role="advocate").delete()
+    return Response({"message": "Deleted"})
 
 
 @api_view(["POST"])

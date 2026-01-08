@@ -1,18 +1,16 @@
 from django.urls import path
 from .views import (
-    signup,
-    login_view,
-    me,
-    pending_advocates,
-    approve_advocate,
+    signup, login_view, me,
+    pending_advocates, approve_advocate, delete_advocate
 )
 
 urlpatterns = [
-    path("auth/signup/", signup),
-    path("auth/login/", login_view),
+    path("signup/", signup),
+    path("login/", login_view),
     path("me/", me),
 
-    # 👇 ADMIN
-    path("advocates/", pending_advocates),
-    path("advocates/<int:id>/approve/", approve_advocate),
+    # admin
+    path("admin/pending-advocates/", pending_advocates),
+    path("admin/approve-advocate/<int:id>/", approve_advocate),
+    path("admin/delete-advocate/<int:id>/", delete_advocate),
 ]
