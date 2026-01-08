@@ -11,3 +11,4 @@ asgiref>=3.7
 
 gunicorn
 whitenoise
+django-cors-headers

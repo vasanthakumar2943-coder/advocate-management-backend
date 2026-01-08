@@ -11,7 +11,7 @@ SECRET_KEY = os.getenv(
     "django-insecure-dev-key"
 )
 
-DEBUG = True
+DEBUG = True  # OK for now (prod later False)
 
 ALLOWED_HOSTS = [
     "web-production-d827.up.railway.app",
@@ -34,16 +34,17 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "channels",
+    "rest_framework_simplejwt",  # ✅ MISSING BEFORE (IMPORTANT)
 
     # local apps
     "users",
 ]
 
 # =========================
-# MIDDLEWARE
+# MIDDLEWARE (ORDER MATTERS)
 # =========================
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",  # ✅ MUST BE FIRST
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -103,18 +104,10 @@ DATABASES = {
 # AUTH / PASSWORD
 # =========================
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 LANGUAGE_CODE = "en-us"
@@ -131,20 +124,53 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =========================
-# CORS / CSRF (Vercel)
+# AUTH USER
+# =========================
+AUTH_USER_MODEL = "users.User"
+
+# =========================
+# CORS CONFIG (🔥 MAIN FIX)
 # =========================
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "https://advocate-management-ten.vercel.app",
 ]
 
+# ✅ THIS WAS MISSING — VERY IMPORTANT
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "authorization",
+    "content-type",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+# ✅ REQUIRED FOR PREFLIGHT
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+# =========================
+# CSRF (SAFE FOR JWT)
+# =========================
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "https://advocate-management-ten.vercel.app",
 ]
 
 # =========================
-# REST FRAMEWORK (FIXED)
+# REST FRAMEWORK (JWT)
 # =========================
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
@@ -152,8 +178,5 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
     ],
 }
-
-AUTH_USER_MODEL = "users.User"
