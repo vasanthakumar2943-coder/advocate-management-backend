@@ -70,3 +70,33 @@ def me(request):
         "role": user.role,
         "status": user.status,
     })
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def pending_advocates(request):
+    if request.user.role != "admin":
+        return Response({"error": "Unauthorized"}, status=403)
+
+    users = User.objects.filter(role="advocate", status="pending")
+
+    data = []
+    for u in users:
+        data.append({
+            "id": u.id,
+            "username": u.username,
+            "status": u.status,
+        })
+
+    return Response(data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def approve_advocate(request, id):
+    if request.user.role != "admin":
+        return Response({"error": "Unauthorized"}, status=403)
+
+    user = User.objects.get(id=id, role="advocate")
+    user.status = "approved"
+    user.save()
+
+    return Response({"message": "Advocate approved"})
