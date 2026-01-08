@@ -1,13 +1,10 @@
 from pathlib import Path
 import os
-from datetime import timedelta
 
-# =========================
-# BASE
-# =========================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key")
+
 DEBUG = True
 
 ALLOWED_HOSTS = [
@@ -17,7 +14,7 @@ ALLOWED_HOSTS = [
 ]
 
 # =========================
-# APPLICATIONS
+# APPS
 # =========================
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -29,8 +26,8 @@ INSTALLED_APPS = [
 
     # third party
     "rest_framework",
-    "rest_framework.authtoken",
     "corsheaders",
+    "channels",
 
     # local
     "users",
@@ -50,11 +47,19 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# =========================
-# URL / WSGI
-# =========================
 ROOT_URLCONF = "advocate_management.urls"
+
 WSGI_APPLICATION = "advocate_management.wsgi.application"
+ASGI_APPLICATION = "advocate_management.asgi.application"
+
+# =========================
+# CHANNELS
+# =========================
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
+}
 
 # =========================
 # DATABASE
@@ -72,46 +77,32 @@ DATABASES = {
 AUTH_USER_MODEL = "users.User"
 
 # =========================
-# REST FRAMEWORK (🔥 IMPORTANT)
-# =========================
-REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-    ],
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ],
-}
-
-from rest_framework_simplejwt.settings import api_settings
-
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    "AUTH_HEADER_TYPES": ("Bearer",),
-}
-
-# =========================
-# CORS (🔥 FIXED)
-# =========================
-CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://advocate-management-ten.vercel.app",
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "https://advocate-management-ten.vercel.app",
-]
-
-# =========================
 # STATIC
 # =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# =========================
+# CORS (IMPORTANT)
+# =========================
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://advocate-management-ten.vercel.app",
+    "http://localhost:5173",
+]
+
+# =========================
+# REST FRAMEWORK ✅ FINAL FIX
+# =========================
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",  # 🔥 VERY IMPORTANT
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+}
