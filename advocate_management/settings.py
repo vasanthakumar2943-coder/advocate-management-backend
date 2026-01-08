@@ -2,27 +2,18 @@ from pathlib import Path
 from datetime import timedelta
 import os
 
-# =====================================================
-# BASE
-# =====================================================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# =====================================================
+# ===============================
 # SECURITY
-# =====================================================
+# ===============================
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
+DEBUG = True  # ⚠️ TEMP TRUE (important)
+ALLOWED_HOSTS = ["*"]
 
-DEBUG = False
-
-ALLOWED_HOSTS = [
-    ".railway.app",
-    "localhost",
-    "127.0.0.1",
-]
-
-# =====================================================
+# ===============================
 # APPS
-# =====================================================
+# ===============================
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -31,37 +22,20 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # third party
-    "rest_framework",
     "corsheaders",
+    "rest_framework",
 
-    # local
     "users",
 ]
 
 AUTH_USER_MODEL = "users.User"
 
-# =====================================================
-# REST FRAMEWORK (JWT)
-# =====================================================
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
-}
-
-# =====================================================
-# MIDDLEWARE
-# =====================================================
+# ===============================
+# MIDDLEWARE (ORDER IS CRITICAL)
+# ===============================
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-
-    # ⚠️ CORS MUST BE TOP
     "corsheaders.middleware.CorsMiddleware",
-
+    "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -69,30 +43,43 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
 
-# =====================================================
-# CORS / CSRF (VERCEL → RAILWAY) ✅ FINAL
-# =====================================================
-
-# 🔥 safest for college project
+# ===============================
+# CORS (FINAL SAFE MODE)
+# ===============================
 CORS_ALLOW_ALL_ORIGINS = True
-
-# JWT only → cookies illa
-CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://advocate-management-ten.vercel.app",
     "https://*.railway.app",
 ]
 
-# =====================================================
-# URLS / TEMPLATES
-# =====================================================
+# ===============================
+# REST + JWT
+# ===============================
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.AllowAny",
+    ),
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=6),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+# ===============================
+# URLS
+# ===============================
 ROOT_URLCONF = "advocate_management.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -105,11 +92,9 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "advocate_management.wsgi.application"
-
-# =====================================================
+# ===============================
 # DATABASE
-# =====================================================
+# ===============================
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -117,44 +102,10 @@ DATABASES = {
     }
 }
 
-# =====================================================
-# PASSWORD
-# =====================================================
-AUTH_PASSWORD_VALIDATORS = []
-
-# =====================================================
-# I18N
-# =====================================================
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = "Asia/Kolkata"
-USE_I18N = True
-USE_TZ = True
-
-# =====================================================
-# STATIC & MEDIA
-# =====================================================
+# ===============================
+# STATIC
+# ===============================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# =====================================================
-# CACHE (typing indicator safe)
-# =====================================================
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-    }
-}
-
-# =====================================================
-# JWT SETTINGS
-# =====================================================
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=6),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    "AUTH_HEADER_TYPES": ("Bearer",),
-}
