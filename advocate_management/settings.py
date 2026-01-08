@@ -2,9 +2,6 @@ from pathlib import Path
 from datetime import timedelta
 import os
 
-# =====================================================
-# BASE
-# =====================================================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # =====================================================
@@ -32,7 +29,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # third-party
+    # third party
     "rest_framework",
     "corsheaders",
 
@@ -43,7 +40,7 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = "users.User"
 
 # =====================================================
-# MIDDLEWARE  ⚠️ ORDER IS VERY IMPORTANT
+# MIDDLEWARE  (⚠️ ORDER VERY IMPORTANT)
 # =====================================================
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",  # MUST BE FIRST
@@ -56,8 +53,9 @@ MIDDLEWARE = [
 ]
 
 # =====================================================
-# CORS / CSRF (VERCEL → RAILWAY) ✅ FINAL
+# CORS / CSRF  (VERCEL → RAILWAY)
 # =====================================================
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
@@ -65,21 +63,22 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_HEADERS = [
-    "accept",
     "authorization",
     "content-type",
+    "accept",
     "origin",
+    "user-agent",
     "x-csrftoken",
     "x-requested-with",
 ]
 
 CORS_ALLOW_METHODS = [
-    "DELETE",
     "GET",
-    "OPTIONS",
-    "PATCH",
     "POST",
     "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -87,12 +86,11 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.railway.app",
 ]
 
-# 🚨 THIS LINE IS CRITICAL FOR API LOGIN
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
 # =====================================================
-# REST FRAMEWORK (JWT)
+# REST FRAMEWORK
 # =====================================================
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -124,8 +122,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "advocate_management.wsgi.application"
-
 # =====================================================
 # DATABASE
 # =====================================================
@@ -147,7 +143,7 @@ USE_I18N = True
 USE_TZ = True
 
 # =====================================================
-# STATIC & MEDIA
+# STATIC / MEDIA
 # =====================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -158,7 +154,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =====================================================
-# CACHE (Typing indicator safe)
+# CACHE (typing indicator safe)
 # =====================================================
 CACHES = {
     "default": {
@@ -167,7 +163,7 @@ CACHES = {
 }
 
 # =====================================================
-# JWT SETTINGS
+# JWT
 # =====================================================
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=6),
