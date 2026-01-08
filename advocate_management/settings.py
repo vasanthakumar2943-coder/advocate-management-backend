@@ -12,7 +12,6 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "web-production-d827.up.railway.app",
     ".railway.app",
     "localhost",
     "127.0.0.1",

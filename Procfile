@@ -1,1 +1,1 @@
-web: gunicorn advocate_management.wsgi:application --bind 0.0.0.0:8000
+web: gunicorn advocate_management.wsgi:application --bind 0.0.0.0:$PORT
