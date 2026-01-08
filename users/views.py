@@ -1,9 +1,8 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
@@ -15,12 +14,12 @@ User = get_user_model()
 def signup(request):
     data = request.data
 
-    if User.objects.filter(username=data["username"]).exists():
+    if User.objects.filter(username=data.get("username")).exists():
         return Response({"error": "User already exists"}, status=400)
 
     user = User.objects.create_user(
-        username=data["username"],
-        password=data["password"],
+        username=data.get("username"),
+        password=data.get("password"),
         role=data.get("role", "client"),
         status="pending" if data.get("role") == "advocate" else "approved",
     )
@@ -58,25 +57,9 @@ def login_view(request):
 def me(request):
     user = request.user
     return Response({
+        "id": user.id,
         "username": user.username,
-        "role": user.role,
-        "status": user.status,
+        "email": user.email,
+        "role": getattr(user, "role", None),
+        "status": getattr(user, "status", None),
     })
-
-
-@api_view(["POST"])
-@permission_classes([AllowAny])  # 🔥 MUST
-def signup(request):
-    data = request.data
-
-    if User.objects.filter(username=data["username"]).exists():
-        return Response({"error": "User already exists"}, status=400)
-
-    user = User.objects.create_user(
-        username=data["username"],
-        password=data["password"],
-        role=data.get("role", "client"),
-        status="pending" if data.get("role") == "advocate" else "approved",
-    )
-
-    return Response({"message": "Signup successful"}, status=201)

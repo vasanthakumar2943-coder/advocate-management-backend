@@ -24,3 +24,11 @@ class AdvocateProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+class User(AbstractUser):
+    ROLE_CHOICES = (
+        ("admin", "Admin"),
+        ("advocate", "Advocate"),
+        ("client", "Client"),
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
