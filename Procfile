@@ -1,1 +1,1 @@
-web: gunicorn advocate_management.wsgi
+web: gunicorn advocate_management.wsgi:application
