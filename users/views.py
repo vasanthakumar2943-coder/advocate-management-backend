@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 User = get_user_model()
 
 # =====================
-# SIGNUP (PUBLIC)
+# SIGNUP
 # =====================
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -17,7 +17,7 @@ def signup(request):
     if User.objects.filter(username=data.get("username")).exists():
         return Response({"error": "User already exists"}, status=400)
 
-    user = User.objects.create_user(
+    User.objects.create_user(
         username=data.get("username"),
         password=data.get("password"),
         role=data.get("role", "client"),
@@ -28,7 +28,7 @@ def signup(request):
 
 
 # =====================
-# LOGIN (PUBLIC)
+# LOGIN
 # =====================
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -50,7 +50,7 @@ def login_view(request):
 
 
 # =====================
-# ME (PROTECTED)
+# ME
 # =====================
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -60,6 +60,6 @@ def me(request):
         "id": user.id,
         "username": user.username,
         "email": user.email,
-        "role": getattr(user, "role", None),
-        "status": getattr(user, "status", None),
+        "role": user.role,
+        "status": user.status,
     })
