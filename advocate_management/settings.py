@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =====================================================
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
 
-DEBUG = False
+DEBUG = False   # ✅ PRODUCTION SAFE
 
 ALLOWED_HOSTS = [
     "web-production-d827.up.railway.app",
@@ -57,11 +57,11 @@ REST_FRAMEWORK = {
 }
 
 # =====================================================
-# MIDDLEWARE  (ORDER IS CRITICAL)
+# MIDDLEWARE  (❌ NO WHITENOISE)
 # =====================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -69,26 +69,19 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
 
-
 # =====================================================
 # CORS / CSRF  (VERCEL → RAILWAY)
 # =====================================================
-
-
-
-# ✅ Allow only your frontend
 CORS_ALLOWED_ORIGINS = [
     "https://advocate-management-ten.vercel.app",
 ]
 
-# ✅ Allow JWT headers
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "authorization",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
-# ✅ CSRF (required for POST/PUT/DELETE)
 CSRF_TRUSTED_ORIGINS = [
     "https://advocate-management-ten.vercel.app",
     "https://*.railway.app",
@@ -136,16 +129,10 @@ USE_I18N = True
 USE_TZ = True
 
 # =====================================================
-# STATIC & MEDIA
+# STATIC & MEDIA (NO WHITENOISE)
 # =====================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-
-DEBUG = True
-
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -153,7 +140,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =====================================================
-# CHANNELS (STABLE – NO REDIS)
+# CHANNELS (NO REDIS – STABLE)
 # =====================================================
 ASGI_APPLICATION = "advocate_management.asgi.application"
 
