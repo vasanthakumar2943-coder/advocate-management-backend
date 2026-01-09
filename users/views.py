@@ -130,6 +130,9 @@ def delete_advocate(request, id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def approved_advocates(request):
-    advocates = User.objects.filter(role="advocate", status="approved")
-    data = [{"id": u.id, "username": u.username} for u in advocates]
-    return Response(data)
+    advocates = User.objects.filter(
+        role="advocate",
+        is_approved=True
+    ).values("id", "username")
+
+    return Response(advocates)
