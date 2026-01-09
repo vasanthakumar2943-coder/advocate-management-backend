@@ -150,9 +150,23 @@ def approved_advocates(request):
     advocates = User.objects.filter(
         role="advocate",
         is_approved=True
-    ).values("id", "username")
+    )
 
-    return Response(list(advocates))
+    data = []
+    for adv in advocates:
+        can_chat = Appointment.objects.filter(
+            client=request.user,
+            advocate=adv,
+            status="approved"
+        ).exists()
+
+        data.append({
+            "id": adv.id,
+            "username": adv.username,
+            "can_chat": can_chat
+        })
+
+    return Response(data)
 
 # =====================
 # CREATE APPOINTMENT
