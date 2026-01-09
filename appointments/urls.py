@@ -11,5 +11,6 @@ urlpatterns = [
     path("appointments/requests/", advocate_requests),
     path("appointments/approve/<int:pk>/", approve_appointment),
     path("test/", test_api),
+     path("appointments/", create_appointment),
 
 ]

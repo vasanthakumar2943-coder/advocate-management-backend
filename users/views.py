@@ -1,9 +1,11 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
+
+from appointments.models import Appointment  # ✅ MISSING IMPORT FIXED
 
 User = get_user_model()
 
@@ -29,7 +31,6 @@ def signup(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 🔥 Approval rule
         is_approved = True if role in ["admin", "client"] else False
 
         User.objects.create_user(
@@ -49,6 +50,7 @@ def signup(request):
             {"error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
 # =====================
 # LOGIN
 # =====================
@@ -73,8 +75,9 @@ def login_view(request):
         "role": user.role,
         "is_approved": user.is_approved,
     })
+
 # =====================
-# ME
+# ME (SINGLE, FINAL)
 # =====================
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -85,9 +88,8 @@ def me(request):
         "username": user.username,
         "email": user.email,
         "role": user.role,
-        "status": user.status,
+        "is_approved": user.is_approved,  # ✅ FIXED
     })
-
 
 # =====================
 # ADMIN – PENDING ADVOCATES
@@ -123,7 +125,6 @@ def approve_advocate(request, id):
     except User.DoesNotExist:
         return Response({"error": "User not found"}, status=404)
 
-
 # =====================
 # ADMIN – DELETE ADVOCATE
 # =====================
@@ -140,34 +141,34 @@ def delete_advocate(request, id):
     except User.DoesNotExist:
         return Response({"error": "User not found"}, status=404)
 
-
 # =====================
-# CLIENT – APPROVED ADVOCATES LIST ✅ (IMPORTANT)
+# CLIENT – APPROVED ADVOCATES LIST
 # =====================
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def approved_advocates(request):
-    try:
-        advocates = User.objects.filter(
-            is_approved=True
-        ).values("id", "username")
+    advocates = User.objects.filter(
+        role="advocate",
+        is_approved=True
+    ).values("id", "username")
 
-        return Response(list(advocates))
-    except Exception as e:
-        return Response(
-            {"error": str(e)},
-            status=500
-        )
+    return Response(list(advocates))
+
 # =====================
-# ADVOCATE APPROVED NOTIFICATION 
+# CREATE APPOINTMENT
 # =====================
-@api_view(["GET"])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def me(request):
-    user = request.user
-    return Response({
-        "id": user.id,
-        "username": user.username,
-        "role": user.role,
-        "is_approved": user.is_approved,
-    })
+def create_appointment(request):
+    if request.user.role != "client":
+        return Response({"error": "Only clients can book"}, status=403)
+
+    advocate_id = request.data.get("advocate")
+
+    Appointment.objects.create(
+        client=request.user,
+        advocate_id=advocate_id,
+        status="pending"
+    )
+
+    return Response({"message": "Booking successful"})

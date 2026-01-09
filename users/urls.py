@@ -7,6 +7,7 @@ from .views import (
     approve_advocate,
     delete_advocate,
     approved_advocates,
+    create_appointment
 )
 
 urlpatterns = [
@@ -28,4 +29,6 @@ urlpatterns = [
     # CLIENT – APPROVED ADVOCATES
     # =========================
     path("approved-advocates/", approved_advocates),
+    path("appointments/", create_appointment),
+
 ]
