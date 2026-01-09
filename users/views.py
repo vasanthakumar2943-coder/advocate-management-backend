@@ -144,6 +144,8 @@ def delete_advocate(request, id):
 # =====================
 # CLIENT – APPROVED ADVOCATES LIST
 # =====================
+from appointments.models import Appointment
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def approved_advocates(request):
@@ -153,12 +155,18 @@ def approved_advocates(request):
     )
 
     data = []
+
     for adv in advocates:
-        can_chat = Appointment.objects.filter(
-            client=request.user,
-            advocate=adv,
-            status="approved"
-        ).exists()
+        # 🔐 Default (admin / others)
+        can_chat = False
+
+        # ✅ Only clients need chat permission check
+        if request.user.role == "client":
+            can_chat = Appointment.objects.filter(
+                client=request.user,
+                advocate=adv,
+                status="approved"
+            ).exists()
 
         data.append({
             "id": adv.id,
