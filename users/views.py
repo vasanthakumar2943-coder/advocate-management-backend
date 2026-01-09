@@ -14,14 +14,14 @@ User = get_user_model()
 def signup(request):
     data = request.data
 
-    if User.objects.filter(username=data["username"]).exists():
+    if User.objects.filter(username=data.get("username")).exists():
         return Response({"error": "User exists"}, status=400)
 
     role = data.get("role", "client")
 
     user = User.objects.create_user(
-        username=data["username"],
-        password=data["password"],
+        username=data.get("username"),
+        password=data.get("password"),
         role=role,
         status="pending" if role == "advocate" else "approved",
     )
@@ -46,7 +46,7 @@ def login_view(request):
     if user.role == "advocate" and user.status != "approved":
         return Response(
             {"error": "Advocate account pending admin approval"},
-            status=403
+            status=403,
         )
 
     refresh = RefreshToken.for_user(user)
@@ -73,47 +73,63 @@ def me(request):
     })
 
 
+# =====================
+# ADMIN – PENDING ADVOCATES
+# =====================
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def pending_advocates(request):
     if request.user.role != "admin":
-        return Response(status=403)
+        return Response({"error": "Unauthorized"}, status=403)
 
     advocates = User.objects.filter(role="advocate", status="pending")
     data = [{"id": u.id, "username": u.username} for u in advocates]
     return Response(data)
 
 
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def approve_advocate(request, id):
-    if request.user.role != "admin":
-        return Response(status=403)
-
-    user = User.objects.get(id=id, role="advocate")
-    user.status = "approved"
-    user.save()
-    return Response({"message": "Approved"})
-
-
-@api_view(["DELETE"])
-@permission_classes([IsAuthenticated])
-def delete_advocate(request, id):
-    if request.user.role != "admin":
-        return Response(status=403)
-
-    User.objects.filter(id=id, role="advocate").delete()
-    return Response({"message": "Deleted"})
-
-
+# =====================
+# ADMIN – APPROVE ADVOCATE
+# =====================
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def approve_advocate(request, id):
     if request.user.role != "admin":
         return Response({"error": "Unauthorized"}, status=403)
 
-    user = User.objects.get(id=id, role="advocate")
+    try:
+        user = User.objects.get(id=id, role="advocate")
+    except User.DoesNotExist:
+        return Response({"error": "Advocate not found"}, status=404)
+
     user.status = "approved"
     user.save()
 
     return Response({"message": "Advocate approved"})
+
+
+# =====================
+# ADMIN – DELETE ADVOCATE
+# =====================
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_advocate(request, id):
+    if request.user.role != "admin":
+        return Response({"error": "Unauthorized"}, status=403)
+
+    deleted, _ = User.objects.filter(id=id, role="advocate").delete()
+
+    if deleted == 0:
+        return Response({"error": "Advocate not found"}, status=404)
+
+    return Response({"message": "Deleted"})
+
+
+# =====================
+# CLIENT – APPROVED ADVOCATES LIST ✅ (IMPORTANT)
+# =====================
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def approved_advocates(request):
+    advocates = User.objects.filter(role="advocate", status="approved")
+    data = [{"id": u.id, "username": u.username} for u in advocates]
+    return Response(data)
