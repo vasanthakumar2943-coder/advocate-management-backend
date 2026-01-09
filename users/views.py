@@ -3,6 +3,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import status
 
 User = get_user_model()
 
@@ -10,53 +11,68 @@ User = get_user_model()
 # SIGNUP
 # =====================
 @api_view(["POST"])
-@permission_classes([AllowAny])
 def signup(request):
-    data = request.data
+    try:
+        username = request.data.get("username")
+        password = request.data.get("password")
+        role = request.data.get("role")
 
-    if User.objects.filter(username=data.get("username")).exists():
-        return Response({"error": "User exists"}, status=400)
+        if not username or not password or not role:
+            return Response(
+                {"error": "All fields are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    role = data.get("role", "client")
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {"error": "Username already exists"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    user = User.objects.create_user(
-        username=data.get("username"),
-        password=data.get("password"),
-        role=role,
-        status="pending" if role == "advocate" else "approved",
-    )
+        # 🔥 Approval rule
+        is_approved = True if role in ["admin", "client"] else False
 
-    return Response({"message": "Signup success"})
+        User.objects.create_user(
+            username=username,
+            password=password,
+            role=role,
+            is_approved=is_approved
+        )
 
+        return Response(
+            {"message": "Signup successful"},
+            status=status.HTTP_201_CREATED
+        )
 
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 # =====================
 # LOGIN
 # =====================
 @api_view(["POST"])
-@permission_classes([AllowAny])
 def login_view(request):
-    user = authenticate(
-        username=request.data.get("username"),
-        password=request.data.get("password"),
-    )
+    username = request.data.get("username")
+    password = request.data.get("password")
+
+    user = authenticate(username=username, password=password)
 
     if not user:
-        return Response({"error": "Invalid credentials"}, status=401)
-
-    if user.role == "advocate" and user.status != "approved":
         return Response(
-            {"error": "Advocate account pending admin approval"},
-            status=403,
+            {"error": "Invalid credentials"},
+            status=status.HTTP_403_FORBIDDEN
         )
 
     refresh = RefreshToken.for_user(user)
 
     return Response({
         "access": str(refresh.access_token),
+        "refresh": str(refresh),
         "role": user.role,
+        "is_approved": user.is_approved,
     })
-
-
 # =====================
 # ME
 # =====================
