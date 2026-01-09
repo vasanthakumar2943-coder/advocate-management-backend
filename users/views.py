@@ -157,16 +157,18 @@ def approved_advocates(request):
     data = []
 
     for adv in advocates:
-        # 🔐 Default (admin / others)
         can_chat = False
 
-        # ✅ Only clients need chat permission check
+        # ✅ SAFE CHECK ONLY FOR CLIENT
         if request.user.role == "client":
-            can_chat = Appointment.objects.filter(
-                client=request.user,
-                advocate=adv,
-                status="approved"
-            ).exists()
+            try:
+                can_chat = Appointment.objects.filter(
+                    client=request.user,
+                    advocate=adv,
+                    status="approved"
+                ).exists()
+            except Exception:
+                can_chat = False
 
         data.append({
             "id": adv.id,
@@ -175,6 +177,7 @@ def approved_advocates(request):
         })
 
     return Response(data)
+
 
 # =====================
 # CREATE APPOINTMENT
