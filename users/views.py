@@ -95,12 +95,15 @@ def me(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def pending_advocates(request):
+    if request.user.role != "admin":
+        return Response({"error": "Forbidden"}, status=403)
+
     users = User.objects.filter(
+        role="advocate",
         is_approved=False
     ).values("id", "username")
 
     return Response(list(users))
-
 
 # =====================
 # ADMIN – APPROVE ADVOCATE
@@ -109,17 +112,16 @@ def pending_advocates(request):
 @permission_classes([IsAuthenticated])
 def approve_advocate(request, id):
     if request.user.role != "admin":
-        return Response({"error": "Unauthorized"}, status=403)
+        return Response({"error": "Forbidden"}, status=403)
 
     try:
         user = User.objects.get(id=id, role="advocate")
+        user.is_approved = True
+        user.save()
+
+        return Response({"message": "Advocate approved"})
     except User.DoesNotExist:
-        return Response({"error": "Advocate not found"}, status=404)
-
-    user.status = "approved"
-    user.save()
-
-    return Response({"message": "Advocate approved"})
+        return Response({"error": "User not found"}, status=404)
 
 
 # =====================
@@ -129,14 +131,14 @@ def approve_advocate(request, id):
 @permission_classes([IsAuthenticated])
 def delete_advocate(request, id):
     if request.user.role != "admin":
-        return Response({"error": "Unauthorized"}, status=403)
+        return Response({"error": "Forbidden"}, status=403)
 
-    deleted, _ = User.objects.filter(id=id, role="advocate").delete()
-
-    if deleted == 0:
-        return Response({"error": "Advocate not found"}, status=404)
-
-    return Response({"message": "Deleted"})
+    try:
+        user = User.objects.get(id=id, role="advocate")
+        user.delete()
+        return Response({"message": "Advocate deleted"})
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
 
 
 # =====================
