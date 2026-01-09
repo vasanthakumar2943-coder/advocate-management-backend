@@ -136,3 +136,16 @@ def approved_advocates(request):
     ).values("id", "username")
 
     return Response(advocates)
+# =====================
+# ADVOCATE APPROVED NOTIFICATION 
+# =====================
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def me(request):
+    user = request.user
+    return Response({
+        "id": user.id,
+        "username": user.username,
+        "role": user.role,
+        "is_approved": user.is_approved,
+    })

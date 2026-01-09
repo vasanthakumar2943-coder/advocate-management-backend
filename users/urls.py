@@ -6,20 +6,26 @@ from .views import (
     pending_advocates,
     approve_advocate,
     delete_advocate,
-    approved_advocates,   # ✅ ADD THIS
+    approved_advocates,
 )
 
 urlpatterns = [
-    # auth
+    # =========================
+    # AUTH
+    # =========================
     path("signup/", signup),
     path("login/", login_view),
     path("me/", me),
 
-    # admin – advocate approval
+    # =========================
+    # ADMIN – ADVOCATE APPROVAL
+    # =========================
     path("admin/pending-advocates/", pending_advocates),
     path("admin/approve-advocate/<int:id>/", approve_advocate),
     path("admin/delete-advocate/<int:id>/", delete_advocate),
 
-    # client – approved advocates list ✅
+    # =========================
+    # CLIENT – APPROVED ADVOCATES
+    # =========================
     path("approved-advocates/", approved_advocates),
 ]
