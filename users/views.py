@@ -79,12 +79,11 @@ def me(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def pending_advocates(request):
-    if request.user.role != "admin":
-        return Response({"error": "Unauthorized"}, status=403)
+    users = User.objects.filter(
+        is_approved=False
+    ).values("id", "username")
 
-    advocates = User.objects.filter(role="advocate", status="pending")
-    data = [{"id": u.id, "username": u.username} for u in advocates]
-    return Response(data)
+    return Response(list(users))
 
 
 # =====================
@@ -130,12 +129,17 @@ def delete_advocate(request, id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def approved_advocates(request):
-    advocates = User.objects.filter(
-        role="advocate",
-        is_approved=True
-    ).values("id", "username")
+    try:
+        advocates = User.objects.filter(
+            is_approved=True
+        ).values("id", "username")
 
-    return Response(advocates)
+        return Response(list(advocates))
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=500
+        )
 # =====================
 # ADVOCATE APPROVED NOTIFICATION 
 # =====================
