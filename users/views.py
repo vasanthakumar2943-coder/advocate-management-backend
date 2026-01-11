@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 
-from appointments.models import Appointment  # ✅ MISSING IMPORT FIXED
+from appointments.models import Appointment  # ✅ single correct import
 
 User = get_user_model()
 
@@ -51,6 +51,7 @@ def signup(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+
 # =====================
 # LOGIN
 # =====================
@@ -67,6 +68,13 @@ def login_view(request):
             status=status.HTTP_403_FORBIDDEN
         )
 
+    # ✅ FIX: BLOCK UNAPPROVED ADVOCATES
+    if user.role == "advocate" and not user.is_approved:
+        return Response(
+            {"error": "Advocate account pending admin approval"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
     refresh = RefreshToken.for_user(user)
 
     return Response({
@@ -76,8 +84,9 @@ def login_view(request):
         "is_approved": user.is_approved,
     })
 
+
 # =====================
-# ME (SINGLE, FINAL)
+# ME
 # =====================
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -88,8 +97,9 @@ def me(request):
         "username": user.username,
         "email": user.email,
         "role": user.role,
-        "is_approved": user.is_approved,  # ✅ FIXED
+        "is_approved": user.is_approved,
     })
+
 
 # =====================
 # ADMIN – PENDING ADVOCATES
@@ -107,6 +117,7 @@ def pending_advocates(request):
 
     return Response(list(users))
 
+
 # =====================
 # ADMIN – APPROVE ADVOCATE
 # =====================
@@ -120,10 +131,10 @@ def approve_advocate(request, id):
         user = User.objects.get(id=id, role="advocate")
         user.is_approved = True
         user.save()
-
         return Response({"message": "Advocate approved"})
     except User.DoesNotExist:
         return Response({"error": "User not found"}, status=404)
+
 
 # =====================
 # ADMIN – DELETE ADVOCATE
@@ -141,11 +152,10 @@ def delete_advocate(request, id):
     except User.DoesNotExist:
         return Response({"error": "User not found"}, status=404)
 
+
 # =====================
 # CLIENT – APPROVED ADVOCATES LIST
 # =====================
-from appointments.models import Appointment
-
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def approved_advocates(request):
@@ -159,16 +169,12 @@ def approved_advocates(request):
     for adv in advocates:
         can_chat = False
 
-        # ✅ SAFE CHECK ONLY FOR CLIENT
         if request.user.role == "client":
-            try:
-                can_chat = Appointment.objects.filter(
-                    client=request.user,
-                    advocate=adv,
-                    status="approved"
-                ).exists()
-            except Exception:
-                can_chat = False
+            can_chat = Appointment.objects.filter(
+                client=request.user,
+                advocate=adv,
+                status="approved"
+            ).exists()
 
         data.append({
             "id": adv.id,
@@ -180,7 +186,7 @@ def approved_advocates(request):
 
 
 # =====================
-# CREATE APPOINTMENT
+# CLIENT – CREATE APPOINTMENT
 # =====================
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -189,6 +195,9 @@ def create_appointment(request):
         return Response({"error": "Only clients can book"}, status=403)
 
     advocate_id = request.data.get("advocate")
+
+    if not advocate_id:
+        return Response({"error": "advocate is required"}, status=400)
 
     Appointment.objects.create(
         client=request.user,
