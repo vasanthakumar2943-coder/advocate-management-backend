@@ -32,3 +32,4 @@ urlpatterns = [
     path("appointments/", create_appointment),
 
 ]
+
