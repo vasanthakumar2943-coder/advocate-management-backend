@@ -8,8 +8,16 @@ from rest_framework import status
 
 from .models import Appointment
 
-
 User = get_user_model()
+
+
+# ✅ ROOT ENDPOINT (FIXES 404 /api/appointments)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def appointments_root(request):
+    return Response({
+        "detail": "Use /appointments/requests/ or /appointments/approved/"
+    })
 
 
 @api_view(["POST"])
@@ -37,9 +45,13 @@ def create_appointment(request):
     )
 
 
+# 🔴 Pending requests for advocate
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def advocate_requests(request):
+    if request.user.role != "advocate":
+        return Response({"error": "Forbidden"}, status=403)
+
     appointments = Appointment.objects.filter(
         advocate=request.user,
         status="pending",
@@ -56,6 +68,7 @@ def advocate_requests(request):
     )
 
 
+# ✅ Approve appointment
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def approve_appointment(request, pk):
@@ -70,6 +83,8 @@ def approve_appointment(request, pk):
 
     return Response({"message": "Approved"})
 
+
+# 🟢 Approved clients
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def approved_clients(request):
