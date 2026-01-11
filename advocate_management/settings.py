@@ -33,7 +33,7 @@ INSTALLED_APPS = [
 
     # local apps
     "users",          # ✅ MUST
-    "appointments",   # ✅ MUST
+    
 ]
 
 # =========================
@@ -145,3 +145,8 @@ TEMPLATES = [
         },
     },
 ]
+# =========================
+# MEDIA (for chat files / images)
+# =========================
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
