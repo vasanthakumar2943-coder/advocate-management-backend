@@ -69,3 +69,23 @@ def approve_appointment(request, pk):
     appointment.save()
 
     return Response({"message": "Approved"})
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def approved_clients(request):
+    if request.user.role != "advocate":
+        return Response({"error": "Forbidden"}, status=403)
+
+    apps = Appointment.objects.filter(
+        advocate=request.user,
+        status="approved"
+    )
+
+    return Response([
+        {
+            "appointment_id": a.id,
+            "client_id": a.client.id,
+            "client_name": a.client.username
+        }
+        for a in apps
+    ])
