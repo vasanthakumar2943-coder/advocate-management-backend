@@ -194,10 +194,13 @@ def create_appointment(request):
     if request.user.role != "client":
         return Response({"error": "Only clients can book"}, status=403)
 
-    advocate_id = request.data.get("advocate")
+    advocate_id = request.data.get("advocate_id")  # ✅ FIX HERE
 
     if not advocate_id:
-        return Response({"error": "advocate is required"}, status=400)
+        return Response(
+            {"error": "advocate_id required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     Appointment.objects.create(
         client=request.user,
