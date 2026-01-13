@@ -104,3 +104,22 @@ def approved_clients(request):
         }
         for a in apps
     ])
+
+
+# 🟢 Delete clients
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_appointment(request, pk):
+    if request.user.role != "advocate":
+        return Response({"error": "Forbidden"}, status=403)
+
+    appointment = get_object_or_404(
+        Appointment,
+        id=pk,
+        advocate=request.user,
+        status="pending"
+    )
+
+    appointment.delete()
+    return Response({"message": "Appointment deleted"})

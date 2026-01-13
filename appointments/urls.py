@@ -1,10 +1,12 @@
 from django.urls import path
+from .views import delete_appointment
 from .views import (
     create_appointment,
     advocate_requests,
     approve_appointment,
     approved_clients,
     appointments_root,
+    delete_appointment,
 )
 
 urlpatterns = [
@@ -22,4 +24,6 @@ urlpatterns = [
 
     # ✅ Approve appointment
     path("approve/<int:pk>/", approve_appointment),  # POST
+
+    path("delete/<int:pk>/", delete_appointment),     # DELETE ✅
 ]
